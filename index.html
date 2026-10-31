@@ -3,76 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karachi Delivery Pro - Baldia & Saeedabad Route</title>
+    <title>Karachi Delivery Pro - All Karachi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
-
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-md">
+    <header class="bg-slate-900 border-b border-slate-800 p-3 sticky top-0 z-50 flex justify-between items-center">
         <div>
-            <h1 class="text-lg font-bold text-blue-400 flex items-center gap-2">
-                🚚 Karachi Delivery Pro
-            </h1>
-            <p class="text-xs text-slate-400">Baldia & Saeedabad Sector Route</p>
+            <h1 class="text-base font-bold text-orange-400">📦 Karachi Delivery Pro</h1>
+            <p class="text-xs text-slate-400">All Karachi Route Manager</p>
         </div>
-        <a href="https://www.zameen.com/plotfinder/Karachi-30/Baldia-Town-Sector-4E-15161/" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium flex items-center gap-1 shadow">
-            📍 Plot Finder
-        </a>
+        <a href="https://www.zameen.com/plotfinder/Karachi/" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded font-medium">📍 Plot Finder</a>
     </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-4">
-
+    <!-- Main App Container -->
+    <main class="max-w-md mx-auto p-3 space-y-3 flex-grow w-full pb-20">
         <!-- Scanner Section -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow">
             <div class="flex justify-between items-center mb-2">
-                <h2 class="text-sm font-semibold text-slate-300">📷 Barcode Scanner</h2>
-                <button onclick="toggleScanner()" id="scanToggleBtn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded">Start Scanner</button>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">📷 Barcode / Scanner</span>
+                <button id="scan-toggle" onclick="toggleScanner()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded font-medium">Start Camera</button>
             </div>
-            <div id="reader" class="hidden rounded-lg overflow-hidden border border-slate-600 mb-2"></div>
+            <div id="reader" class="hidden w-full rounded overflow-hidden mb-2"></div>
+            <p class="text-[10px] text-slate-400">Note: Agar camera allow na ho, toh 'Auto' button dabain ya Tracking ID khud likhein.</p>
         </div>
 
-        <!-- Parcel Entry Form -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow space-y-3">
-            <h2 class="text-sm font-semibold text-slate-300">📦 Parcel Details Entry</h2>
+        <!-- Entry Form -->
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">📋 Parcel Details Entry</h2>
+            <form id="parcel-form" onsubmit="addParcel(event)" class="space-y-2">
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-slate-400 mb-1">Tracking ID</label>
+                        <input type="text" id="tracking-id" required class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">&nbsp;</label>
+                        <button type="button" onclick="autoGenerateID()" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs py-1.5 rounded font-medium border border-slate-700">Auto ID</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Customer Name</label>
+                        <input type="text" id="cust-name" required placeholder="Name" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Phone Number</label>
+                        <input type="tel" id="cust-phone" required placeholder="03XXXXXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Karachi Area / Zone</label>
+                        <select id="cust-sector" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                            <option value="Baldia Town">Baldia Town</option>
+                            <option value="Saeedabad">Saeedabad</option>
+                            <option value="Lyari">Lyari</option>
+                            <option value="Orangi Town">Orangi Town</option>
+                            <option value="Nazimabad">Nazimabad</option>
+                            <option value="North Nazimabad">North Nazimabad</option>
+                            <option value="Golimar">Golimar</option>
+                            <option value="PECHS">PECHS</option>
+                            <option value="Defence (DHA)">Defence (DHA)</option>
+                            <option value="Clifton">Clifton</option>
+                            <option value="Saddar">Saddar</option>
+                            <option value="Gulshan-e-Iqbal">Gulshan-e-Iqbal</option>
+                            <option value="Gulistan-e-Jauhar">Gulistan-e-Jauhar</option>
+                            <option value="F.B. Area">F.B. Area</option>
+                            <option value="Gulberg">Gulberg</option>
+                            <option value="Korangi">Korangi</option>
+                            <option value="Landhi">Landhi</option>
+                            <option value="Malir">Malir</option>
+                            <option value="Buffer Zone">Buffer Zone</option>
+                            <option value="Other Area">Other Area</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">COD Amount (PKR)</label>
+                        <input type="number" id="cod-amount" required placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">House / Plot Address</label>
+                    <input type="text" id="cust-address" required placeholder="House #, Street, Block" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                </div>
+
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold py-2 rounded shadow transition mt-1">➕ Add Parcel to Queue</button>
+            </form>
+        </div>
+
+        <!-- Route & Queue Manager Section -->
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">🚀 Delivery Queue & Route</span>
+                <span id="parcel-count" class="text-xs bg-slate-800 px-2 py-0.5 rounded text-orange-400 font-semibold">0 Parcels</span>
+            </div>
             
-            <div>
-                <label class="text-xs text-slate-400">Tracking ID / Number</label>
-                <div class="flex gap-2 mt-1">
-                    <input type="text" id="trackId" placeholder="e.g. PK-88492" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-                    <button onclick="generateRandomId()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 text-xs rounded-lg text-slate-300">Auto</button>
+            <div id="queue-container" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-500 text-center py-4">No parcels added yet. Add a parcel above!</p>
+            </div>
+        </div>
+
+        <!-- Daily Financial & Status Log -->
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">📊 Daily Summary & Cash Log</h3>
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                    <span class="block text-[10px] text-slate-400">Total COD</span>
+                    <span id="total-cod" class="text-xs font-bold text-emerald-400">Rs 0</span>
+                </div>
+                <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                    <span class="block text-[10px] text-slate-400">Delivered</span>
+                    <span id="delivered-count" class="text-xs font-bold text-blue-400">0</span>
+                </div>
+                <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                    <span class="block text-[10px] text-slate-400">Cancelled</span>
+                    <span id="cancelled-count" class="text-xs font-bold text-rose-400">0</span>
                 </div>
             </div>
+        </div>
+    </main>
 
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="text-xs text-slate-400">Customer Name</label>
-                    <input type="text" id="custName" placeholder="Customer Name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 mt-1 focus:outline-none focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="text-xs text-slate-400">Phone Number</label>
-                    <input type="tel" id="custPhone" placeholder="03001234567" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 mt-1 focus:outline-none focus:border-blue-500">
-                </div>
-            </div>
+    <!-- JavaScript Logic -->
+    <script>
+        let parcels = JSON.parse(localStorage.getItem('delivery_parcels')) || [];
+        let html5QrCode = null;
 
-            <div>
-                <label class="text-xs text-slate-400">Sector / Area Zone (Karachi)</label>
-                <select id="custSector" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 mt-1 focus:outline-none focus:border-blue-500">
-                    <option value="">Select Area / Zone...</option>
-                    <option value="Baldia Sector 4E">Baldia Town - Sector 4E</option>
-                    <option value="Baldia Sector 4F">Baldia Town - Sector 4F</option>
-                    <option value="Baldia Saeedabad">Baldia Town - Saeedabad</option>
-                    <option value="Baldia Sector 9">Baldia Town - Sector 9</option>
-                    <option value="Baldia Gulshan e Tauheed">Gulshan-e-Tauheed</option>
-                    <option value="Ittehad Town">Ittehad Town</option>
-                </select>
-            </div>
+        function autoGenerateID() {
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('tracking-id').value = 'MS-' + randomNum;
+        }
 
-            <div>
-                <label class="text-xs text-slate-400">House / Plot Address & Plot #</label>
-                <input type="text" id="custAddress" placeholder="e.g. House # 142, Street 4, Plot 1516" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 mt-1 focus:outline-none focus:border-blue-500">
-            </div>
+        function toggleScanner() {
+            const readerDiv = document.getElementById('reader');
+            const toggleBtn = document.getElementById('scan-toggle');
+            
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    readerDiv.classList.add('hidden');
+                    toggleBtn.innerText = 'Start Camera';
+                }).catch(err => console.log(err));
+            } else {
+                readerDiv.classList.remove('hidden');
+                toggleBtn.innerText = 'Stop Camera';
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 200, height: 100 } },
+                    (decodedText) => {
+                        document.getElementById('tracking-id').value = decodedText;
+                        html5QrCode.stop().then(() => {
+                            readerDiv.classList.add('hidden');
+                            toggleBtn.innerText = 'Start Camera';
+                        }).catch(err => {});
+                    },
+                    (error) => {}
+                ).catch(err => {
+                    alert("Camera permission block hai ya support nahi kar raha. Barcode manual type kar lein.");
+                    readerDiv.classList.add('hidden');
+                    toggleBtn.innerText = 'Start Camera';
+                });
+            }
+        }
 
-            <div>
-                <label class="text-xs text
+        function addParcel(e) {
+            e.preventDefault();
+            const parcel = {
+                id: document.getElementById('tracking-id').value,
+                name: document.getElementById('cust-name').value,
+                phone: document.getElementById('cust-phone').value,
+                sector: document.getElementById('cust-sector').value,
+                cod: parseFloat(document.getElementById('cod-amount').value) || 0,
+                address: document.getElementById('cust-address').value,
+                status: 'Pending'
+            };
+
+            parcels.push(parcel);
+            saveAndRender();
+            document.getElementById('parcel-form').reset();
+        }
+
+        function updateStatus(index, newStatus) {
+            parcels[index].status = newStatus;
+            saveAndRender();
+        }
+
+        function deleteParcel(index) {
+            parcels.splice(index, 1);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('delivery_parcels', JSON.stringify(parcels));
+            renderQueue();
+        }
+
+        function renderQueue() {
+            const container = document.getElementById('queue-container');
+            const countBadge = document.getElementById('parcel-count');
+            
+            countBadge.innerText = parcels.length + ' Parcels';
+
+            if (parcels.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">No parcels added yet. Add a parcel above!</p>';
+                document.getElementById('total-cod').innerText = 'Rs 0';
+                document.getElementById('delivered-count').innerText = '0';
+                document.getElementById('cancelled-count').innerText = '0';
+                return;
+            }
+
+            let totalCod = 0;
+            let delivered = 0;
+            let cancelled = 0;
+
+            container.innerHTML = parcels.map((p, idx) => {
+                if (p.status === 'Delivered') {
+                    totalCod += p.cod;
+                    delivered++;
+                }
+                if (p.status === 'Cancelled') cancelled++;
+
+                let statusColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                if (p.status === 'Delivered') statusColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                if (p.status === 'Cancelled') statusColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+
+                return `
+                    <div class="bg-slate-950 border border-slate-800 rounded p-2 space-y-1.5 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-orange-400">${p.id}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] border ${statusColor}">${p.status}</span>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-200">${p.name} <span class="text-slate-400 font-normal">(${p.sector})</span></p>
+                            <p class="text-[11px] text-slate-400 truncate">${p.address}</p>
+                            <p class="text-[11px] font-bold text-emerald-400 mt-0.5">Rs ${p.cod}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1 pt-1 border-t border-slate-900 justify-between items-center">
+                            <a href="tel:${p.phone}" class="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-[10px] font-medium hover:bg-blue-600/30">📞 Call</a>
+                            <div class="space-x-1">
+                                <button onclick="updateStatus(${idx}, 'Delivered')" class="bg-emerald-600/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-medium hover:bg-emerald-600/30">Confirm</button>
+                                <button onclick="updateStatus(${idx}, 'Cancelled')" class="bg-rose-600/20 text-rose-400 px-2 py-1 rounded text-[10px] font-medium hover:bg-rose-600/30">Cancel</button>
+                                <button onclick="deleteParcel(${idx})" class="text-slate-500 hover:text-rose-400 px-1 py-1">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('total-cod').innerText = 'Rs ' + totalCod;
+            document.getElementById('delivered-count').innerText = delivered;
+            document.getElementById('cancelled-count').innerText = cancelled;
+        }
+
+        renderQueue();
+    </script>
+</body>
+                                </html>
