@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karachi Delivery Pro - All Karachi</title>
+    <title>Karachi Delivery Pro - Full Route & History</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
@@ -12,21 +12,23 @@
     <header class="bg-slate-900 border-b border-slate-800 p-3 sticky top-0 z-50 flex justify-between items-center">
         <div>
             <h1 class="text-base font-bold text-orange-400">📦 Karachi Delivery Pro</h1>
-            <p class="text-xs text-slate-400">All Karachi Route Manager</p>
+            <p id="route-status-text" class="text-xs text-slate-400">Route Hub: Not Started</p>
         </div>
-        <a href="https://www.zameen.com/plotfinder/Karachi/" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded font-medium">📍 Plot Finder</a>
+        <div class="flex gap-1">
+            <button onclick="toggleRouteHub()" id="route-hub-btn" class="bg-amber-600 hover:bg-amber-500 text-white text-xs px-2.5 py-1.5 rounded font-medium">Start Route</button>
+            <a href="https://www.zameen.com/plotfinder/Karachi/" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-2.5 py-1.5 rounded font-medium">📍 Map</a>
+        </div>
     </header>
 
     <!-- Main App Container -->
     <main class="max-w-md mx-auto p-3 space-y-3 flex-grow w-full pb-20">
         <!-- Scanner Section -->
         <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow">
-            <div class="flex justify-between items-center mb-2">
+            <div class="flex justify-between items-center mb-1">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-300">📷 Barcode / Scanner</span>
                 <button id="scan-toggle" onclick="toggleScanner()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded font-medium">Start Camera</button>
             </div>
             <div id="reader" class="hidden w-full rounded overflow-hidden mb-2"></div>
-            <p class="text-[10px] text-slate-400">Note: Agar camera allow na ho, toh 'Auto' button dabain ya Tracking ID khud likhein.</p>
         </div>
 
         <!-- Entry Form -->
@@ -96,21 +98,21 @@
             </form>
         </div>
 
-        <!-- Route & Queue Manager Section -->
+        <!-- Delivery Queue & Route -->
         <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow space-y-2">
             <div class="flex justify-between items-center">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">🚀 Delivery Queue & Route</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">🚀 Active Delivery Queue</span>
                 <span id="parcel-count" class="text-xs bg-slate-800 px-2 py-0.5 rounded text-orange-400 font-semibold">0 Parcels</span>
             </div>
             
-            <div id="queue-container" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                <p class="text-xs text-slate-500 text-center py-4">No parcels added yet. Add a parcel above!</p>
+            <div id="queue-container" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-500 text-center py-3">No active parcels in queue.</p>
             </div>
         </div>
 
         <!-- Daily Financial & Status Log -->
-        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">📊 Daily Summary & Cash Log</h3>
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow space-y-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">📊 Daily Summary & Cash Log</h3>
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="bg-slate-950 p-2 rounded border border-slate-800">
                     <span class="block text-[10px] text-slate-400">Total COD</span>
@@ -126,12 +128,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- History Log Section -->
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 shadow space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">📜 History Log (Past Data)</span>
+                <button onclick="clearHistory()" class="text-[10px] text-rose-400 hover:underline">Clear History</button>
+            </div>
+            <div id="history-container" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                <p class="text-[11px] text-slate-500 text-center py-2">No past records found.</p>
+            </div>
+        </div>
     </main>
 
     <!-- JavaScript Logic -->
     <script>
         let parcels = JSON.parse(localStorage.getItem('delivery_parcels')) || [];
+        let historyLog = JSON.parse(localStorage.getItem('delivery_history')) || [];
+        let routeActive = localStorage.getItem('route_active') === 'true';
         let html5QrCode = null;
+
+        // Init Route Hub State
+        updateRouteUI();
+
+        function toggleRouteHub() {
+            routeActive = !routeActive;
+            localStorage.setItem('route_active', routeActive);
+            updateRouteUI();
+        }
+
+        function updateRouteUI() {
+            const btn = document.getElementById('route-hub-btn');
+            const txt = document.getElementById('route-status-text');
+            if (routeActive) {
+                btn.innerText = 'End Route';
+                btn.className = 'bg-rose-600 hover:bg-rose-500 text-white text-xs px-2.5 py-1.5 rounded font-medium';
+                txt.innerText = 'Route Hub: Active & Running 🚀';
+            } else {
+                btn.innerText = 'Start Route';
+                btn.className = 'bg-amber-600 hover:bg-amber-500 text-white text-xs px-2.5 py-1.5 rounded font-medium';
+                txt.innerText = 'Route Hub: Not Started';
+            }
+        }
 
         function autoGenerateID() {
             const randomNum = Math.floor(1000 + Math.random() * 9000);
@@ -146,7 +184,7 @@
                 html5QrCode.stop().then(() => {
                     readerDiv.classList.add('hidden');
                     toggleBtn.innerText = 'Start Camera';
-                }).catch(err => console.log(err));
+                }).catch(err => {});
             } else {
                 readerDiv.classList.remove('hidden');
                 toggleBtn.innerText = 'Stop Camera';
@@ -163,7 +201,7 @@
                     },
                     (error) => {}
                 ).catch(err => {
-                    alert("Camera permission block hai ya support nahi kar raha. Barcode manual type kar lein.");
+                    alert("Camera access failed. Use manual or Auto ID.");
                     readerDiv.classList.add('hidden');
                     toggleBtn.innerText = 'Start Camera';
                 });
@@ -179,7 +217,8 @@
                 sector: document.getElementById('cust-sector').value,
                 cod: parseFloat(document.getElementById('cod-amount').value) || 0,
                 address: document.getElementById('cust-address').value,
-                status: 'Pending'
+                status: 'Pending',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
             parcels.push(parcel);
@@ -188,7 +227,9 @@
         }
 
         function updateStatus(index, newStatus) {
-            parcels[index].status = newStatus;
+            let item = parcels.splice(index, 1)[0];
+            item.status = newStatus;
+            historyLog.unshift(item); // Add to top of history
             saveAndRender();
         }
 
@@ -197,45 +238,36 @@
             saveAndRender();
         }
 
+        function clearHistory() {
+            if (confirm("Kya aap saari history clear karna chahte hain?")) {
+                historyLog = [];
+                localStorage.removeItem('delivery_history');
+                renderQueue();
+            }
+        }
+
         function saveAndRender() {
             localStorage.setItem('delivery_parcels', JSON.stringify(parcels));
+            localStorage.setItem('delivery_history', JSON.stringify(historyLog));
             renderQueue();
         }
 
         function renderQueue() {
             const container = document.getElementById('queue-container');
+            const historyContainer = document.getElementById('history-container');
             const countBadge = document.getElementById('parcel-count');
             
             countBadge.innerText = parcels.length + ' Parcels';
 
+            // Render Active Queue
             if (parcels.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">No parcels added yet. Add a parcel above!</p>';
-                document.getElementById('total-cod').innerText = 'Rs 0';
-                document.getElementById('delivered-count').innerText = '0';
-                document.getElementById('cancelled-count').innerText = '0';
-                return;
-            }
-
-            let totalCod = 0;
-            let delivered = 0;
-            let cancelled = 0;
-
-            container.innerHTML = parcels.map((p, idx) => {
-                if (p.status === 'Delivered') {
-                    totalCod += p.cod;
-                    delivered++;
-                }
-                if (p.status === 'Cancelled') cancelled++;
-
-                let statusColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-                if (p.status === 'Delivered') statusColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                if (p.status === 'Cancelled') statusColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-
-                return `
-                    <div class="bg-slate-950 border border-slate-800 rounded p-2 space-y-1.5 text-xs">
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-3">No active parcels in queue.</p>';
+            } else {
+                container.innerHTML = parcels.map((p, idx) => `
+                    <div class="bg-slate-950 border border-slate-800 rounded p-2 space-y-1 text-xs">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-orange-400">${p.id}</span>
-                            <span class="px-2 py-0.5 rounded text-[10px] border ${statusColor}">${p.status}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending</span>
                         </div>
                         <div>
                             <p class="font-semibold text-slate-200">${p.name} <span class="text-slate-400 font-normal">(${p.sector})</span></p>
@@ -251,8 +283,38 @@
                             </div>
                         </div>
                     </div>
-                `;
-            }).join('');
+                `).join('');
+            }
+
+            // Render History Log & Calculations
+            let totalCod = 0;
+            let delivered = 0;
+            let cancelled = 0;
+
+            historyLog.forEach(h => {
+                if (h.status === 'Delivered') {
+                    totalCod += h.cod;
+                    delivered++;
+                }
+                if (h.status === 'Cancelled') cancelled++;
+            });
+
+            if (historyLog.length === 0) {
+                historyContainer.innerHTML = '<p class="text-[11px] text-slate-500 text-center py-2">No past records found.</p>';
+            } else {
+                historyContainer.innerHTML = historyLog.map(h => {
+                    let badge = h.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400';
+                    return `
+                        <div class="bg-slate-950 border border-slate-900 rounded p-1.5 flex justify-between items-center text-[11px]">
+                            <div>
+                                <span class="font-bold text-slate-300">${h.id}</span> - <span class="text-slate-400">${h.name} (${h.sector})</span>
+                                <div class="text-[10px] text-emerald-400 font-semibold">Rs ${h.cod}</div>
+                            </div>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] ${badge}">${h.status}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             document.getElementById('total-cod').innerText = 'Rs ' + totalCod;
             document.getElementById('delivered-count').innerText = delivered;
@@ -262,4 +324,4 @@
         renderQueue();
     </script>
 </body>
-                                </html>
+            </html>
